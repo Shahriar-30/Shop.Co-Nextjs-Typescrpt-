@@ -1,65 +1,75 @@
+import HomeCard from "@/components/home/HomeCard";
+import NewsLetter from "@/components/home/NewsLetter";
+import { Button } from "@/components/ui/button";
+import { ShoppingBasket } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+const page = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <div className=" ">
+      {/* top-hero */}
+      <div className="w-full h-screen flex flex-col items-center justify-center relative ">
+        <h1 className="text-3xl font-bold w-smd:mx-auto text-center  font-mono">
+          FIND CLOTHES THAT MATCHES YOUR STYLE
+        </h1>
+        <p className="text-center mt-4 text-sm w-[200px] sm:w-[400px] mx-auto font-mono">
+          Shop the latest trends in fashion and find clothes that match your
+          personal style.
+        </p>
+        <Link href="/products">
+          <Button className="mt-6 bg-black text-white w-32 cursor-pointer font-mono hover:bg-gray-800">
+            <ShoppingBasket />
+            Shop Now
+          </Button>
+        </Link>
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+          src="/star.jpg"
+          alt="star Image"
+          width={40}
+          height={40}
+          className="absolute bottom-[20%] right-[10%] "
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+        <Image
+          src="/star.jpg"
+          alt="star Image"
+          width={40}
+          height={40}
+          className="absolute top-[20%] left-12"
+        />
+      </div>
+      {/* middle-hero */}
+      <div className="relative md:h-screen w-full ">
+        <Image
+          src="/heroBanner.jpg"
+          alt="banner Image"
+          width={1920}
+          height={1080}
+          className="w-full h-auto object-cover absolute top-0"
+        />
+        <div className="relative z-10 top-[-50px] flex flex-col py-20 gap-1.5 px-3">
+          <h2 className="text-xl lg:text-6xl font-bold text-black   font-mono">
+            SUMMER SALE IS ON!
+          </h2>
+          <p className="text-black lg:text-4xl w-[200px] sm:w-[400px]   font-mono">
+            Up to 50% off on selected items. Don't miss out!
           </p>
+          <Link href="/products">
+            <Button className="bg-black text-2xl text-white  cursor-pointer font-mono hover:bg-gray-800">
+              <ShoppingBasket />
+              Shop Now
+            </Button>
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
+      {/* new arrivals */}
+      <HomeCard title="New Arrivals" start={0} end={3} />
+      {/* Top Selling */}
+      <HomeCard title="Top Selling" start={3} end={6} />
+      {/* news letter */}
+      <NewsLetter />
     </div>
   );
-}
+};
+
+export default page;
