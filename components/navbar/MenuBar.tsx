@@ -10,6 +10,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import SearchNav from "./SearchNav";
@@ -41,10 +42,6 @@ const MenuBar = () => {
             <Button variant="outline" className="w-full">
               Cart
             </Button>
-          </Link>
-
-          <Link href="/login">
-            <Button className="w-full mt-5">Login</Button>
           </Link>
         </div>
       </DrawerContent>
