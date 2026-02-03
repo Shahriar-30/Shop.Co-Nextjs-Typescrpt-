@@ -20,12 +20,11 @@ import {
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import SearchNav from "./SearchNav";
-import Login from "../login/Login";
+import SearchNav from "../navbar/SearchNav";
 import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/UserStore";
 
-const MenuBar = () => {
+const ProfileBtn = () => {
   let [userInfo, setUserInfo] = useState<any>(null);
 
   let { setUser, getUser } = useUserStore();
@@ -41,7 +40,6 @@ const MenuBar = () => {
   useEffect(() => {
     userVali();
   }, [userInfo]);
-
   return (
     <Drawer direction="right">
       <DrawerTrigger asChild>
@@ -60,34 +58,30 @@ const MenuBar = () => {
           </DrawerTitle>
         </DrawerHeader>
         <DrawerDescription className="hidden"></DrawerDescription>
-        <div className="px-4 flex flex-col gap-2 ">
+        <div className="px-4 flex flex-col  gap-2 ">
           {/* ✅ NO button wrapping */}
           <SearchNav text={"Search"} />
+
           <Link href="/cart">
-            <Button variant="ghost" className="w-full">
+            <Button variant="ghost" className="w-full text-md">
               <ShoppingCart />
               Cart
             </Button>
           </Link>
-          {userInfo ? (
-            <div className="flex flex-col gap-2">
-              <Link href="/shipments">
-                <Button variant="ghost" className="w-full">
-                  <Truck />
-                  Shipments
-                </Button>
-              </Link>
+          <Link href="/shipments">
+            <Button variant="ghost" className="w-full text-md">
+              <Truck />
+              Shipments
+            </Button>
+          </Link>
 
-              <Link href="/profile">
-                <Button variant="ghost" className="w-full">
-                  <User />
-                  Profile
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <Login />
-          )}
+          <Link href="/profile">
+            <Button variant="ghost" className="w-full text-md">
+              <User />
+              Profile
+            </Button>
+          </Link>
+
           {userInfo?.role === "admin" ? (
             <Link href="/admin/dashboard">
               <Button variant="ghost" className="w-full text-md">
@@ -104,4 +98,4 @@ const MenuBar = () => {
   );
 };
 
-export default MenuBar;
+export default ProfileBtn;
