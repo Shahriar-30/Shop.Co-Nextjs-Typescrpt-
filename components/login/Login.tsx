@@ -4,21 +4,12 @@ import { Button } from "@/components/ui/button";
 import { auth, googleProvider } from "@/lib/firebase";
 import { useUserStore } from "@/store/UserStore";
 import { signInWithPopup } from "firebase/auth";
-import { useEffect, useState } from "react";
 import ProfileBtn from "../profile/ProfileBtn";
 
 const page = () => {
-  let [userInfo, setUserInfo] = useState<any>(null);
-
-  let { setUser, getUser } = useUserStore();
-
-  let userVali = async () => {
-    let existingUser = getUser();
-    if (!existingUser) {
-      return setUserInfo(null);
-    }
-    setUserInfo(existingUser);
-  };
+  // subscribe to user so component updates automatically on login/logout
+  const userInfo = useUserStore((state) => state.user);
+  const { setUser } = useUserStore();
 
   const handelGoogle = async () => {
     try {
@@ -31,8 +22,6 @@ const page = () => {
         role: "user",
         photoUrl: result.user.photoURL,
       });
-      userVali();
-      window.location.reload();
     } catch (error) {
       if (
         error instanceof Error &&
@@ -52,9 +41,7 @@ const page = () => {
     }
   };
 
-  useEffect(() => {
-    userVali();
-  }, [userInfo]);
+  // no local effect needed; subscription keeps UI in sync
 
   return (
     <>

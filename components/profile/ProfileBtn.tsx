@@ -21,25 +21,11 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import SearchNav from "../navbar/SearchNav";
-import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/UserStore";
 
 const ProfileBtn = () => {
-  let [userInfo, setUserInfo] = useState<any>(null);
-
-  let { setUser, getUser } = useUserStore();
-
-  let userVali = async () => {
-    let existingUser = getUser();
-    if (!existingUser) {
-      return setUserInfo(null);
-    }
-    setUserInfo(existingUser);
-  };
-
-  useEffect(() => {
-    userVali();
-  }, [userInfo]);
+  // subscribe to the user so the menu updates immediately on login/logout
+  const userInfo = useUserStore((state) => state.user);
   return (
     <Drawer direction="right">
       <DrawerTrigger asChild>
