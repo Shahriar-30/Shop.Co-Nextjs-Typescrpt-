@@ -1,10 +1,11 @@
 "use client";
 import { Button } from "@/components/ui/button";
 
-import { auth, googleProvider } from "@/lib/firebase";
+import { auth, db, googleProvider } from "@/lib/firebase";
 import { useUserStore } from "@/store/UserStore";
 import { signInWithPopup } from "firebase/auth";
 import ProfileBtn from "../profile/ProfileBtn";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 
 const page = () => {
   // subscribe to user so component updates automatically on login/logout
@@ -15,6 +16,33 @@ const page = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
 
+      // Check if user already exists in Firestore
+      try {
+        const userQuery = query(
+          collection(db, "users"),
+          where("id", "==", result.user.uid),
+        );
+        const querySnapshot = await getDocs(userQuery);
+
+        // Only save to Firestore if user doesn't exist
+        if (querySnapshot.empty) {
+          await addDoc(collection(db, "users"), {
+            id: result.user.uid,
+            name: result.user.displayName,
+            email: result.user.email,
+            role: "user",
+            photoUrl: result.user.photoURL,
+            createdAt: new Date(),
+          });
+          console.log("New user added to Firestore");
+        } else {
+          console.log("User already exists in Firestore");
+        }
+      } catch (e) {
+        console.error("Error checking/adding user to Firestore: ", e);
+      }
+
+      // Update local zustand store
       setUser({
         id: result.user.uid,
         name: result.user.displayName,
