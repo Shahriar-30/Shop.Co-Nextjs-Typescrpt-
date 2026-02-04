@@ -35,21 +35,29 @@ const page = () => {
             createdAt: new Date(),
           });
           console.log("New user added to Firestore");
+          // Update local zustand store for new user
+          setUser({
+            id: result.user.uid,
+            name: result.user.displayName,
+            email: result.user.email,
+            role: "user",
+            photoUrl: result.user.photoURL,
+          });
         } else {
-          console.log("User already exists in Firestore");
+          // User exists, fetch data from Firestore and save to zustand
+          const userDoc = querySnapshot.docs[0].data();
+          console.log("User already exists in Firestore, loading data");
+          setUser({
+            id: userDoc.id,
+            name: userDoc.name,
+            email: userDoc.email,
+            role: userDoc.role,
+            photoUrl: userDoc.photoUrl,
+          });
         }
       } catch (e) {
         console.error("Error checking/adding user to Firestore: ", e);
       }
-
-      // Update local zustand store
-      setUser({
-        id: result.user.uid,
-        name: result.user.displayName,
-        email: result.user.email,
-        role: "user",
-        photoUrl: result.user.photoURL,
-      });
     } catch (error) {
       if (
         error instanceof Error &&
