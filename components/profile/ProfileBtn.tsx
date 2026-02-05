@@ -4,6 +4,7 @@ import {
   Menu,
   PanelRightClose,
   RectangleGogglesIcon,
+  Shirt,
   ShoppingCart,
   Truck,
   User,
@@ -44,9 +45,15 @@ const ProfileBtn = () => {
           </DrawerTitle>
         </DrawerHeader>
         <DrawerDescription className="hidden"></DrawerDescription>
-        <div className="px-4 flex flex-col  gap-2 ">
+        <div className="px-4 flex flex-col gap-2  ">
           {/* ✅ NO button wrapping */}
           <SearchNav text={"Search"} />
+          <Link href="/products">
+            <Button variant="ghost" className="w-full mt-2 border-t pt-5">
+              <Shirt />
+              All Products
+            </Button>
+          </Link>
 
           <Link href="/cart">
             <Button variant="ghost" className="w-full text-md">

@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogContent,
@@ -7,49 +9,92 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUserStore } from "@/store/UserStore";
 
 const CreateProduct = () => {
+  const userInfo = useUserStore((state) => state.user);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   let [formError, setFormError] = useState(false);
   let [productData, setProductData] = useState({
     name: "",
-    description: "",
     price: "",
   });
+  const [image, setImage] = useState<File | null>(null);
+  const [url, setUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handelCreateProduct = async () => {
-    const userInfo = useUserStore((state) => state.user);
-
-    if (!productData.name || !productData.description || !productData.price) {
+  const handleCreateProduct = async () => {
+    if (!productData.name || !productData.price) {
       setFormError(true);
       return;
     }
 
-    if (!productData.price.match(/[0-9]+/g)) {
+    setIsLoading(true);
+
+    if (!productData.price.match(/^[0-9]+(\.[0-9]+)?$/)) {
       setFormError(true);
+      return;
+    }
+
+    if (!image) {
+      alert("Select an image first");
       return;
     }
 
     try {
+      // 1️⃣ Upload image to Cloudinary
+      const formData = new FormData();
+      formData.append("file", image);
+      formData.append("upload_preset", "nextjs_unsigned");
+
+      const uploadRes = await fetch(
+        "https://api.cloudinary.com/v1_1/dyjffr5bb/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      const uploadData = await uploadRes.json();
+
+      console.log("Cloudinary response:", uploadData);
+
+      if (!uploadData.secure_url) {
+        throw new Error(
+          `Image upload failed: ${uploadData.error?.message || JSON.stringify(uploadData)}`,
+        );
+      }
+
+      const imageUrl = uploadData.secure_url;
+
+      // 2️⃣ Save product to Firestore
       await addDoc(collection(db, "products"), {
         userId: userInfo?.id,
         name: productData.name,
-        description: productData.description,
         price: parseFloat(productData.price),
+        image: imageUrl, // 👈 saved here
         createdAt: new Date(),
       });
-    } catch (error) {
-      console.error("Error creating product: ", error);
-    }
 
-    // Proceed with product creation logic
-    console.log("Product Created:", productData);
-    // Reset form
-    setProductData({ name: "", description: "", price: "" });
-    setFormError(false);
+      // 3️⃣ Reset state
+      setProductData({ name: "", price: "" });
+      setImage(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      setFormError(false);
+
+      console.log("Product Created with image:", imageUrl);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error creating product:", error);
+      alert("Failed to create product. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -64,6 +109,13 @@ const CreateProduct = () => {
             <DialogDescription className="flex flex-col gap-2">
               {/* <input type="file" placeholder="choose product photo" /> */}
               <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="w-full rounded p-2 mb-2 focus:outline-none border border-black"
+                onChange={(e) => setImage(e.target.files?.[0] || null)}
+              />
+              <input
                 type="text"
                 placeholder="Product Name"
                 className={`w-full rounded p-2 mb-2 focus:outline-none border border-black ${formError ? "border-red-500" : ""}`}
@@ -73,19 +125,7 @@ const CreateProduct = () => {
                   setFormError(false);
                 }}
               />
-              <input
-                type="text"
-                placeholder="Product Description"
-                className={`w-full rounded p-2 mb-2 focus:outline-none border border-black ${formError ? "border-red-500" : ""}`}
-                value={productData.description}
-                onChange={(e) => {
-                  setProductData({
-                    ...productData,
-                    description: e.target.value,
-                  });
-                  setFormError(false);
-                }}
-              />
+
               <input
                 type="text"
                 placeholder="Product Price"
@@ -101,10 +141,11 @@ const CreateProduct = () => {
               />
               <Button
                 variant={"default"}
-                className="w-full bg-blue-800 text-white mt-2"
-                onClick={handelCreateProduct}
+                className="w-full bg-blue-800 text-white mt-2 disabled:opacity-50"
+                onClick={handleCreateProduct}
+                disabled={isLoading}
               >
-                Create Product
+                {isLoading ? "Creating..." : "Create Product"}
               </Button>
             </DialogDescription>
           </DialogHeader>

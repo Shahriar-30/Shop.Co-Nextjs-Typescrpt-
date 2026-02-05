@@ -1,6 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
-
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { auth, db, googleProvider } from "@/lib/firebase";
 import { useUserStore } from "@/store/UserStore";
 import { signInWithPopup } from "firebase/auth";
@@ -11,8 +18,19 @@ const page = () => {
   // subscribe to user so component updates automatically on login/logout
   const userInfo = useUserStore((state) => state.user);
   const { setUser } = useUserStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorDialog, setErrorDialog] = useState({
+    open: false,
+    title: "",
+    message: "",
+  });
+
+  const handleError = (title: string, message: string) => {
+    setErrorDialog({ open: true, title, message });
+  };
 
   const handelGoogle = async () => {
+    setIsLoading(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
 
@@ -55,47 +73,98 @@ const page = () => {
             photoUrl: userDoc.photoUrl,
           });
         }
-      } catch (e) {
-        console.error("Error checking/adding user to Firestore: ", e);
+        setIsLoading(false);
+      } catch (firestoreError) {
+        console.error(
+          "Error checking/adding user to Firestore: ",
+          firestoreError,
+        );
+        handleError(
+          "Database Error",
+          "Failed to save user data. Please try again.",
+        );
+        setIsLoading(false);
       }
     } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message.includes("popup-closed-by-user")
-      ) {
-        console.error("you closed the popup window");
-      } else if (
-        error instanceof Error &&
-        error.message.includes("network-error")
-      ) {
-        console.error("No internet Connection");
-      } else {
-        alert("Failed to sign in with Google, Contact Support");
-        throw new Error("Failed to sign in with Google");
-        console.log(error);
+      setIsLoading(false);
+
+      if (error instanceof Error) {
+        if (error.message.includes("popup-closed-by-user")) {
+          console.log("User cancelled the login");
+          return;
+        }
+
+        if (error.message.includes("network-error")) {
+          handleError(
+            "Connection Error",
+            "No internet connection. Please check your network and try again.",
+          );
+          return;
+        }
+
+        if (error.message.includes("permission-denied")) {
+          handleError(
+            "Permission Denied",
+            "You don't have permission to sign in. Please contact support.",
+          );
+          return;
+        }
+
+        if (error.message.includes("operation-not-supported")) {
+          handleError(
+            "Browser Not Supported",
+            "Pop-up sign-in is not supported in your browser. Please try a different browser.",
+          );
+          return;
+        }
       }
+
+      handleError(
+        "Sign In Failed",
+        "Unable to sign in with Google. Please try again or contact support if the problem persists.",
+      );
     }
   };
 
-  // no local effect needed; subscription keeps UI in sync
-
   return (
     <>
+      <Dialog
+        open={errorDialog.open}
+        onOpenChange={(open) => setErrorDialog({ ...errorDialog, open })}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{errorDialog.title}</DialogTitle>
+            <DialogDescription className="mt-4">
+              {errorDialog.message}
+            </DialogDescription>
+          </DialogHeader>
+          <Button
+            className="w-full mt-4"
+            onClick={() => setErrorDialog({ ...errorDialog, open: false })}
+          >
+            Try Again
+          </Button>
+        </DialogContent>
+      </Dialog>
+
       {userInfo ? (
         <ProfileBtn />
       ) : (
         <Button
-          className="w-full cursor-pointer "
+          className="w-full cursor-pointer"
           variant={"outline"}
           onClick={handelGoogle}
+          disabled={isLoading}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             x="0px"
             y="0px"
-            width="100"
-            height="100"
+            width="20"
+            height="20"
             viewBox="0 0 48 48"
+            className="mr-2"
           >
             <path
               fill="#FFC107"
@@ -114,7 +183,7 @@ const page = () => {
               d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
             ></path>
           </svg>
-          Sign Up With Google
+          {isLoading ? "Signing In..." : "Sign Up With Google"}
         </Button>
       )}
     </>

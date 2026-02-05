@@ -4,6 +4,7 @@ import {
   Menu,
   PanelRightClose,
   RectangleGogglesIcon,
+  Shirt,
   ShoppingCart,
   Truck,
   User,
@@ -49,6 +50,12 @@ const MenuBar = () => {
         <div className="px-4 flex flex-col gap-2 ">
           {/* ✅ NO button wrapping */}
           <SearchNav text={"Search"} />
+          <Link href="/products">
+            <Button variant="ghost" className="w-full">
+              <Shirt />
+              All Products
+            </Button>
+          </Link>
           <Link href="/cart">
             <Button variant="ghost" className="w-full">
               <ShoppingCart />
