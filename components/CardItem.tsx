@@ -24,14 +24,20 @@ const CardItem = ({ item }: { item: any }) => {
     <Card className="w-[300px] ">
       <CardHeader>
         <CardTitle>
-          <Image
-            src={item.link}
-            alt={item.name}
-            width={400}
-            height={400}
-            className="w-full h-auto object-cover rounded-lg"
-            style={{ width: "100%", height: "auto" }}
-          />
+          {item.image ? (
+            <Image
+              src={item.image}
+              alt={item.name}
+              width={400}
+              height={400}
+              className="w-full h-auto object-cover rounded-lg"
+              style={{ width: "100%", height: "auto" }}
+            />
+          ) : (
+            <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+              <p className="text-gray-500">No image available</p>
+            </div>
+          )}
         </CardTitle>
         <CardDescription className="hidden">Card Description</CardDescription>
       </CardHeader>
