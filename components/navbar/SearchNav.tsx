@@ -11,14 +11,43 @@ import {
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
-import { useState } from "react";
-import { ProductJson } from "@/data/Products";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { db } from "@/lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
+
+interface Product {
+  id: string | number;
+  name: string;
+  image: string;
+  price: number;
+}
 
 const SearchNav = ({ text }: { text?: string }) => {
   const [search, setSearch] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredProducts = ProductJson.filter((e) =>
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "products"));
+        const fetchedProducts: Product[] = [];
+        querySnapshot.forEach((doc) => {
+          fetchedProducts.push({ id: doc.id, ...doc.data() } as Product);
+        });
+        setProducts(fetchedProducts);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = products.filter((e) =>
     e.name.toLowerCase().includes(search.toLowerCase()),
   );
 
@@ -40,11 +69,26 @@ const SearchNav = ({ text }: { text?: string }) => {
         </DialogHeader>
 
         <div className="flex flex-col gap-2 overflow-y-auto max-h-[200px]">
-          {filteredProducts.length === 0 && search && (
+          {loading && (
+            <p className="text-sm text-muted-foreground text-center">
+              Loading products...
+            </p>
+          )}
+
+          {!loading && filteredProducts.length === 0 && search && (
             <p className="text-sm text-muted-foreground text-center">
               No products found
             </p>
           )}
+
+          {!loading &&
+            filteredProducts.length === 0 &&
+            !search &&
+            products.length > 0 && (
+              <p className="text-sm text-muted-foreground text-center">
+                Start typing to search products
+              </p>
+            )}
 
           {filteredProducts.map((e) => (
             <Link
@@ -59,7 +103,9 @@ const SearchNav = ({ text }: { text?: string }) => {
             >
               <DialogClose asChild>
                 <div className="w-full border p-2 flex items-center gap-2 hover:bg-muted cursor-pointer">
-                  <Image alt={e.name} width={50} height={50} src={e.link} />
+                  {e.image && (
+                    <Image alt={e.name} width={50} height={50} src={e.image} />
+                  )}
                   <div>
                     <p className="font-medium">{e.name}</p>
                     <p className="text-sm">${e.price}</p>
